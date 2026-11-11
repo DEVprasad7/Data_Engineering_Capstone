@@ -61,3 +61,59 @@ CREATE TABLE products (
 );
 
 DESC products;
+
+-- Creating Remaining tables
+
+CREATE TABLE orders (
+	order_id VARCHAR(50) PRIMARY KEY,
+    customer_id VARCHAR(50) NOT NULL,
+    order_status VARCHAR(30) NOT NULL,
+    
+    order_purchase_timestamp DATETIME,
+    order_approved_at DATETIME,
+    order_delivered_carrier_date DATETIME,
+    
+    order_delivered_customer_date DATETIME,
+    order_estimated_delivery_date DATETIME,
+    
+    CONSTRAINT fk_cust_id
+		FOREIGN KEY (customer_id)
+        REFERENCES customers(customer_id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+);
+
+
+
+DESC orders;
+
+SHOW CREATE TABLE orders;
+
+SHOW TABLES;
+
+CREATE TABLE order_items (
+	order_id VARCHAR(50) NOT NULL,
+    order_items_id VARCHAR(50) NOT NULL,
+    product_id VARCHAR(50) NOT NULL,
+    seller_id VARCHAR(50) NOT NULL,
+    
+    shipping_limit_date DATETIME NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    freight_value DECIMAL(10, 2) NOT NULL,
+    
+    PRIMARY KEY (order_id, order_items_id),
+    CONSTRAINT fk_p_id
+		FOREIGN KEY (product_id)
+        REFERENCES products(product_id),
+	
+    CONSTRAINT fk_o_id
+		FOREIGN KEY (order_id)
+        REFERENCES orders(order_id),
+        
+	CONSTRAINT fk_s_id
+		FOREIGN KEY (seller_id)
+        REFERENCES sellers(seller_id)
+);
+
+
+DESC order_items;
