@@ -117,3 +117,45 @@ CREATE TABLE order_items (
 
 
 DESC order_items;
+SHOW TABLES;
+
+
+CREATE TABLE payments (
+	order_id VARCHAR(50) NOT NULL,
+    payment_sequential INT NOT NULL,
+    payment_type VARCHAR(30) NOT NULL,
+    
+    payment_installments INT NOT NULL,
+    payment_value DECIMAL(10, 2) NOT NULL,
+    
+    PRIMARY KEY (order_id, payment_sequential),
+    
+    CONSTRAINT fk_o_p_id
+		FOREIGN KEY (order_id)
+        REFERENCES orders(order_id)
+);
+
+
+DESC payments;
+
+CREATE TABLE reviews (
+	review_id VARCHAR(50) NOT NULL,
+    order_id VARCHAR(50) NOT NULL,
+    
+    review_score INT NOT NULL,
+    review_comment_title TEXT,
+    review_comment_message TEXT,
+    review_creation_date DATETIME NOT NULL,
+    review_answer_timestamp DATETIME NOT NULL,
+    
+    PRIMARY KEY (review_id, order_id),
+    
+    CONSTRAINT fk_o_r_id
+		FOREIGN KEY (order_id)
+        REFERENCES orders(order_id),
+        
+	CONSTRAINT chk_rev_sc
+		CHECK (review_score BETWEEN 1 AND 5)
+);
+
+DESC reviews;
