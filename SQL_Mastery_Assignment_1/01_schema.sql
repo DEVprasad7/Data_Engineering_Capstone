@@ -165,12 +165,14 @@ SHOW TABLES;
 
 
 -- INSERTING DATA INTO THE
+
 SHOW VARIABLES LIKE 'secure_file_priv';
 SHOW VARIABLES LIKE  'autocommit';
 SET GLOBAL local_infile = 1;
 SET autocommit = 0; -- Turning off autocommit so that i can verify the transactions before commiting the changes
 USE brazilianecommerce;
 
+-- started transaction for customers data insertion.
 START TRANSACTION;
 
 LOAD DATA LOCAL INFILE 'C:/Users/prasa/OneDrive/Desktop/Data_Engineering_Capstone/SQL_Mastery_Assignment_1/Dataset/olist_customers_dataset.csv'
@@ -188,8 +190,52 @@ IGNORE 1 LINES
     customer_city,
     customer_state
 );
-SHOW WARNINGS; -- This warning after loading the data showed that there were duplicate entries so the duplicated were never inserted into the table.
-
+SHOW WARNINGS; -- This showed warning after loading the data showed that there were duplicate entries so the duplicates were never inserted into the table.
 SELECT * FROM customers; -- Total 96096 rows were added.
+
+COMMIT;
+
+-- started transaction for sellers data insertion.
+DESC sellers;
+START TRANSACTION;
+
+LOAD DATA LOCAL INFILE 'C:/Users/prasa/OneDrive/Desktop/Data_Engineering_Capstone/SQL_Mastery_Assignment_1/Dataset/olist_sellers_dataset.csv'
+INTO TABLE sellers
+CHARACTER SET utf8mb4
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+	seller_id,
+    seller_zip_code_prefix,
+    seller_city,
+    seller_state
+);
+
+SHOW WARNINGS; -- no warnings so no duplicates or any issues
+COMMIT;
+
+SELECT * FROM sellers;
+
+-- started transaction for product_category_translation data insertion.
+
+SHOW TABLES;
+DESC product_category_translation;
+START TRANSACTION;
+
+LOAD DATA LOCAL INFILE 'C:/Users/prasa/OneDrive/Desktop/Data_Engineering_Capstone/SQL_Mastery_Assignment_1/Dataset/product_category_name_translation.csv'
+INTO TABLE product_category_translation
+CHARACTER SET utf8mb4
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+	product_category_name,
+    product_category_name_english
+); -- no warnings
 
 COMMIT;
