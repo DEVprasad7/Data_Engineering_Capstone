@@ -2,7 +2,10 @@ SHOW DATABASES;
 
 CREATE DATABASE BrazilianEcommerce;
 
-USE BrazilianEcommerce;
+SHOW VARIABLES LIKE 'secure_file_priv';
+SET GLOBAL local_infile = 1;
+SET autocommit = 0;
+USE brazilianecommerce;
 
 SHOW TABLES;
 
@@ -83,8 +86,6 @@ CREATE TABLE orders (
         ON DELETE RESTRICT
 );
 
-
-
 DESC orders;
 
 SHOW CREATE TABLE orders;
@@ -159,3 +160,36 @@ CREATE TABLE reviews (
 );
 
 DESC reviews;
+
+SHOW TABLES;
+
+
+-- INSERTING DATA INTO THE
+SHOW VARIABLES LIKE 'secure_file_priv';
+SHOW VARIABLES LIKE  'autocommit';
+SET GLOBAL local_infile = 1;
+SET autocommit = 0; -- Turning off autocommit so that i can verify the transactions before commiting the changes
+USE brazilianecommerce;
+
+START TRANSACTION;
+
+LOAD DATA LOCAL INFILE 'C:/Users/prasa/OneDrive/Desktop/Data_Engineering_Capstone/SQL_Mastery_Assignment_1/Dataset/olist_customers_dataset.csv'
+INTO TABLE customers
+CHARACTER SET utf8mb4
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+    customer_id,
+    customer_unique_id,
+    customer_zip_code_prefix,
+    customer_city,
+    customer_state
+);
+SHOW WARNINGS; -- This warning after loading the data showed that there were duplicate entries so the duplicated were never inserted into the table.
+
+SELECT * FROM customers; -- Total 96096 rows were added.
+
+COMMIT;
