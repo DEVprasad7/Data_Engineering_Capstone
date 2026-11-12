@@ -239,3 +239,43 @@ IGNORE 1 LINES
 ); -- no warnings
 
 COMMIT;
+
+-- starting transaction for data insertion in products.
+
+SHOW TABLES;
+DESC products;
+SELECT * FROM products;
+
+START TRANSACTION;
+
+LOAD DATA LOCAL INFILE 'C:/Users/prasa/OneDrive/Desktop/Data_Engineering_Capstone/SQL_Mastery_Assignment_1/Dataset/olist_products_dataset.csv'
+INTO TABLE products
+CHARACTER SET utf8mb4
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+	product_id,
+    product_category,
+    product_name_length,
+    product_description_length,
+    product_photos_qty,
+    product_weight_g,
+    product_length_cm,
+    product_height_cm,
+    product_width_cm
+);
+
+SHOW WARNINGS; -- null values from the product_name_length column and false product_category_name total 1024 rows are not inserted.
+
+COMMIT;
+
+SELECT * FROM products; -- total 32328 rows inserted out off 32951
+
+SHOW TABLES;
+SELECT * FROM customers;
+SELECT * FROM products;
+SELECT * FROM sellers;
+SELECT * FROM product_category_translation;
