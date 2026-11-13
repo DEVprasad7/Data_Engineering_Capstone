@@ -274,8 +274,147 @@ COMMIT;
 
 SELECT * FROM products; -- total 32328 rows inserted out off 32951
 
+-- starting transaction for data insertion in orders.
+
 SHOW TABLES;
-SELECT * FROM customers;
-SELECT * FROM products;
-SELECT * FROM sellers;
-SELECT * FROM product_category_translation;
+DESC orders;
+SELECT * FROM orders;
+
+START TRANSACTION;
+
+LOAD DATA LOCAL INFILE 'C:/Users/prasa/OneDrive/Desktop/Data_Engineering_Capstone/SQL_Mastery_Assignment_1/Dataset/olist_orders_dataset.csv'
+INTO TABLE orders
+CHARACTER SET utf8mb4
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+	order_id,
+    customer_id,
+    order_status,
+    order_purchase_timestamp,
+    order_approved_at,
+    order_delivered_carrier_date,
+    order_delivered_customer_date,
+    order_estimated_delivery_date
+);
+
+SHOW WARNINGS;
+SELECT * FROM orders; -- exact total rows inserted into the orders count is 96096
+COMMIT;
+
+-- starting transaction for data insertion in order_items.
+
+SHOW TABLES;
+DESC order_items;
+
+START TRANSACTION;
+
+LOAD DATA LOCAL INFILE 'C:/Users/prasa/OneDrive/Desktop/Data_Engineering_Capstone/SQL_Mastery_Assignment_1/Dataset/olist_order_items_dataset.csv'
+INTO TABLE order_items
+CHARACTER SET utf8mb4
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+	order_id,
+    order_items_id,
+    product_id,
+    seller_id,
+    shipping_limit_date,
+    price,
+    freight_value
+);
+
+SHOW WARNINGS; 
+SELECT * FROM order_items; -- 107037 ROWS inserted
+COMMIT;
+
+-- starting transaction for data insertion in payments.
+
+SHOW TABLES;
+DESC payments;
+
+START TRANSACTION;
+
+LOAD DATA LOCAL INFILE 'C:/Users/prasa/OneDrive/Desktop/Data_Engineering_Capstone/SQL_Mastery_Assignment_1/Dataset/olist_order_payments_dataset.csv'
+INTO TABLE payments
+CHARACTER SET utf8mb4
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+	order_id,
+    payment_sequential,
+    payment_type,
+    payment_installments,
+    payment_value
+);
+
+SELECT * FROM payments;
+SHOW WARNINGS; -- total 100356 rows inserted
+COMMIT;
+
+-- starting transaction for data insertion in reviews.
+
+SHOW TABLES;
+DESC reviews;
+
+START TRANSACTION;
+
+LOAD DATA LOCAL INFILE 'C:/Users/prasa/OneDrive/Desktop/Data_Engineering_Capstone/SQL_Mastery_Assignment_1/Dataset/olist_order_reviews_dataset.csv'
+INTO TABLE reviews
+CHARACTER SET utf8mb4
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+	review_id,
+    order_id,
+    review_score,
+    review_comment_title,
+    review_comment_message,
+    review_creation_date,
+    review_answer_timestamp
+);
+
+SHOW WARNINGS;
+SELECT * FROM reviews; -- 95k plus rows inserted
+
+COMMIT;
+
+
+-- starting transaction for data insertion in geolocation.
+
+SHOW TABLES;
+DESC geolocation;
+
+START TRANSACTION;
+
+LOAD DATA LOCAL INFILE 'C:/Users/prasa/OneDrive/Desktop/Data_Engineering_Capstone/SQL_Mastery_Assignment_1/Dataset/olist_geolocation_dataset.csv'
+INTO TABLE geolocation
+CHARACTER SET utf8mb4
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"'
+
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(
+	geolocation_zip_code_prefix,
+    geolocation_lat,
+    geolocation_lng,
+    geolocation_city,
+    geolocation_state
+);
+
+SHOW WARNINGS;
+SELECT * FROM geolocation; -- total 1000163 rows inserted
+COMMIT;
