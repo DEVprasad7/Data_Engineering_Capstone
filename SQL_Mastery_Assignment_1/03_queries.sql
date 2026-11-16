@@ -124,3 +124,53 @@ SELECT
     , 2), '%') AS mom
 FROM monthly_revenue_table
 ORDER BY payment_date;
+
+
+-- Find top 10 products by revenue in each category
+SHOW TABLES;
+SELECT * FROM products;
+SELECT * FROM product_category_translation;
+SELECT * FROM order_items;
+
+SELECT
+	oi.order_id,
+	p.product_id,
+    pc.product_category_name_english,
+    oi.price
+FROM products p
+JOIN product_category_translation pc
+ON p.product_category = pc.product_category_name
+JOIN order_items oi
+ON oi.product_id = p.product_id
+ORDER BY oi.price DESC LIMIT 10;
+
+-- Calculate Customer Lifetime Value (CLV) and categorize customers.
+SELECT * FROM customers;
+SELECT * FROM orders;
+SELECT * FROM order_items;
+
+SELECT
+    c.customer_id,
+    c.customer_city,
+    o.order_id,
+    SUM(oi.price) AS total_purchase,
+    CASE
+        WHEN SUM(oi.price) >= 5000 THEN 'High Value'
+        WHEN SUM(oi.price) >= 2000 THEN 'Mid Value'
+        ELSE 'Low Value'
+    END AS customer_purchasing_category
+FROM customers c
+JOIN orders o
+    ON c.customer_id = o.customer_id
+JOIN order_items oi
+    ON o.order_id = oi.order_id
+GROUP BY 
+    c.customer_id, 
+    c.customer_city, 
+    o.order_id
+ORDER BY total_purchase DESC;
+
+-- 
+
+
+
