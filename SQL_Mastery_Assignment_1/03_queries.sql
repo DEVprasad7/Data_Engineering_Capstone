@@ -170,7 +170,31 @@ GROUP BY
     o.order_id
 ORDER BY total_purchase DESC;
 
--- 
+-- Find customers who bought electronics but never books
+SELECT * FROM order_items;
+SELECT * FROM orders;
+SELECT * FROM products;
+SELECT * FROM product_category_translation ORDER BY product_category_name_english;
+
+WITH customer_purchase AS (SELECT
+    o.order_id,
+    o.customer_id,
+    oi.product_id,
+    pc.product_category_name_english
+FROM order_items oi
+JOIN orders o
+ON oi.order_id = o.order_id
+JOIN products p
+ON p.product_id = oi.product_id
+JOIN product_category_translation pc
+ON p.product_category = pc.product_category_name)
+
+SELECT
+	customer_id,
+    order_id,
+    COUNT(order_id) AS Total_orders_made
+FROM customer_purchase
+GROUP BY order_id;
 
 
 
