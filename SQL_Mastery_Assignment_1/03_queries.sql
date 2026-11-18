@@ -242,3 +242,35 @@ FROM (
     GROUP BY p.product_id, pc.product_category_name_english
 ) AS ranked_products
 WHERE category_ranking = 2;
+
+-- Calculate a 7-day moving average of daily order count.
+
+WITH daily_orders AS (
+SELECT 
+	CAST(order_purchase_timestamp AS DATE) AS order_date,
+	COUNT(order_id) AS order_count
+FROM orders
+GROUP BY order_date
+ORDER BY order_date
+)
+SELECT 
+    order_date,
+    order_count,
+    AVG(order_count * 1.0) OVER (
+        ORDER BY order_date 
+        ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+    ) AS moving_avg_7day
+FROM daily_orders
+ORDER BY order_date;
+
+-- Rank sellers by revenue within each state.
+SELECT * FROM order_items;
+SELECT * FROM sellers;
+
+SELECT
+	*
+FROM order_items oi
+JOIN sellers s
+ON oi.seller_id = s.seller_id;
+
+
