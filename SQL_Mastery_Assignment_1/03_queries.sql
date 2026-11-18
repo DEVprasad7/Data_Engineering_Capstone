@@ -267,10 +267,24 @@ ORDER BY order_date;
 SELECT * FROM order_items;
 SELECT * FROM sellers;
 
-SELECT
-	*
-FROM order_items oi
-JOIN sellers s
-ON oi.seller_id = s.seller_id;
+WITH sells_state AS (
+    SELECT 
+        oi.seller_id,
+        s.seller_state,
+        SUM(oi.price + oi.freight_value) AS total_sells_state
+    FROM order_items oi
+    JOIN sellers s ON oi.seller_id = s.seller_id
+    GROUP BY oi.seller_id, s.seller_state  -- include state in group by
+)
+SELECT 
+    seller_id,
+    seller_state,
+    total_sells_state,
+    RANK() OVER (
+        PARTITION BY seller_state 
+        ORDER BY total_sells_state DESC  -- order by revenue instead of state name
+    ) AS seller_rank_in_state
+FROM sells_state
+ORDER BY seller_state, seller_rank_in_state;
 
 
