@@ -196,5 +196,49 @@ SELECT
 FROM customer_purchase
 GROUP BY order_id;
 
+-- Find customers spending above their state's average.
+SELECT * FROM customers;
+SELECT * FROM order_items;
+SELECT * FROM orders;
 
+SELECT 
+    customer_id,
+    customer_state,
+    total_spend,
+    avg_state_spend
+FROM (
+    -- Subquery: Calculates total spend per customer and the state average in one go
+    SELECT 
+        c.customer_id,
+        c.customer_state,
+        SUM(oi.price + oi.freight_value) AS total_spend,
+        AVG(SUM(oi.price + oi.freight_value)) OVER (PARTITION BY c.customer_state) AS avg_state_spend
+    FROM customers c
+    JOIN orders o ON c.customer_id = o.customer_id
+    JOIN order_items oi ON o.order_id = oi.order_id
+    GROUP BY c.customer_id, c.customer_state
+) AS sub
+WHERE total_spend >= avg_state_spend;
 
+-- Get the 2nd highest revenue-generating product in each category
+
+SELECT 
+    product_id,
+    product_category_name_english,
+    total_product_revenue,
+    category_ranking
+FROM (
+    SELECT 
+        p.product_id,
+        pc.product_category_name_english,
+        SUM(oi.price + oi.freight_value) AS total_product_revenue,
+        ROW_NUMBER() OVER (
+            PARTITION BY pc.product_category_name_english 
+            ORDER BY SUM(oi.price + oi.freight_value) DESC
+        ) AS category_ranking
+    FROM products p
+    JOIN product_category_translation pc ON p.product_category = pc.product_category_name
+    JOIN order_items oi ON oi.product_id = p.product_id
+    GROUP BY p.product_id, pc.product_category_name_english
+) AS ranked_products
+WHERE category_ranking = 2;
