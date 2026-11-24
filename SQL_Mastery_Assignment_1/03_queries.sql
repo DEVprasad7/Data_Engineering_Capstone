@@ -288,3 +288,177 @@ FROM sells_state
 ORDER BY seller_state, seller_rank_in_state;
 
 
+
+-- Improvements and quick additions after mentor review
+-- Create sales reports using ROLLUP or CUBE.
+SELECT
+    YEAR(o.order_purchase_timestamp) AS sales_year,
+    MONTH(o.order_purchase_timestamp) AS sales_month,
+    COALESCE(p.product_category, 'Uncategorized') AS category,
+    SUM(oi.price) AS total_revenue,
+    SUM(oi.freight_value) AS total_freight,
+    COUNT(DISTINCT oi.order_id) AS total_orders
+FROM orders o
+JOIN order_items oi
+    ON o.order_id = oi.order_id
+JOIN products p
+    ON oi.product_id = p.product_id
+GROUP BY
+    YEAR(o.order_purchase_timestamp),
+    MONTH(o.order_purchase_timestamp),
+    p.product_category
+WITH ROLLUP;
+
+
+-- Perform market basket analysis using self-joins. 
+SELECT
+    a.product_id AS product_1,
+    b.product_id AS product_2,
+    COUNT(DISTINCT a.order_id) AS times_bought_together
+FROM order_items a
+JOIN order_items b
+    ON a.order_id = b.order_id
+    AND a.product_id < b.product_id
+GROUP BY
+    a.product_id,
+    b.product_id
+HAVING COUNT(DISTINCT a.order_id) >= 5
+ORDER BY times_bought_together DESC
+LIMIT 20;
+
+-- Create a product category hierarchy using recursive CTEs.
+
+
+WITH RECURSIVE category_nodes AS (
+    SELECT 'All Categories' AS category_name,
+           NULL AS parent_category
+
+    UNION ALL
+
+    SELECT 'Electronics',
+           'All Categories'
+
+    UNION ALL
+
+    SELECT 'Home & Living',
+           'All Categories'
+
+    UNION ALL
+
+    SELECT 'Fashion',
+           'All Categories'
+
+    UNION ALL
+
+    SELECT 'Other',
+           'All Categories'
+
+    UNION ALL
+
+    SELECT DISTINCT
+        product_category,
+        CASE
+            WHEN product_category LIKE '%eletron%'
+              OR product_category LIKE '%informat%'
+              OR product_category LIKE '%comput%'
+              OR product_category LIKE '%telefon%'
+              OR product_category LIKE '%audio%'
+                THEN 'Electronics'
+
+            WHEN product_category LIKE '%casa%'
+              OR product_category LIKE '%cozinha%'
+              OR product_category LIKE '%moveis%'
+              OR product_category LIKE '%decor%'
+                THEN 'Home & Living'
+
+            WHEN product_category LIKE '%fashion%'
+              OR product_category LIKE '%roupa%'
+              OR product_category LIKE '%sapato%'
+              OR product_category LIKE '%beleza%'
+                THEN 'Fashion'
+
+            ELSE 'Other'
+        END AS parent_category
+    FROM products
+    WHERE product_category IS NOT NULL
+),
+
+category_hierarchy AS (
+    SELECT
+        category_name,
+        parent_category,
+        0 AS hierarchy_level,
+        CAST(category_name AS CHAR(1000)) AS category_path
+    FROM category_nodes
+    WHERE parent_category IS NULL
+
+    UNION ALL
+
+    SELECT
+        c.category_name,
+        c.parent_category,
+        h.hierarchy_level + 1,
+        CONCAT(h.category_path, ' > ', c.category_name)
+    FROM category_nodes c
+    JOIN category_hierarchy h
+        ON c.parent_category = h.category_name
+)
+
+SELECT
+    hierarchy_level,
+    category_name,
+    parent_category,
+    category_path
+FROM category_hierarchy
+ORDER BY category_path;
+
+-- Create a stored procedure for dynamic discount calculation.
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS calculate_discount$$
+
+CREATE PROCEDURE calculate_discount(
+    IN p_order_amount DECIMAL(10,2),
+    OUT p_discount_rate DECIMAL(5,2),
+    OUT p_discount_amount DECIMAL(10,2),
+    OUT p_final_amount DECIMAL(10,2)
+)
+BEGIN
+    IF p_order_amount < 100 THEN
+        SET p_discount_rate = 0;
+
+    ELSEIF p_order_amount < 500 THEN
+        SET p_discount_rate = 5;
+
+    ELSEIF p_order_amount < 1000 THEN
+        SET p_discount_rate = 10;
+
+    ELSE
+        SET p_discount_rate = 15;
+    END IF;
+
+    SET p_discount_amount = p_order_amount * p_discount_rate / 100;
+
+    SET p_final_amount = p_order_amount - p_discount_amount;
+END$$
+
+DELIMITER ;
+
+-- testing the procedure
+
+CALL calculate_discount(
+    750.00,
+    @discount_rate,
+    @discount_amount,
+    @final_amount
+);
+
+SELECT
+    750.00 AS order_amount,
+    @discount_rate AS discount_percentage,
+    @discount_amount AS discount_amount,
+    @final_amount AS final_amount;
+    
+    
+
